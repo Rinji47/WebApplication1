@@ -134,6 +134,35 @@ namespace mong.Controllers
 			return NotFound($"Order with OrderNumber {orderNumber} not found.");
 		}
 
+		[HttpGet("TableOrders")]
+		public async Task<ActionResult> GetTableOrders()
+		{
+			try
+			{
+				// Filter orders where Delivered is false
+				var orders = await _orders
+					.Find(o => o.Delivered == false)
+					.ToListAsync();
+				if (orders.Any())
+				{
+					return Ok(orders.Select(order => new
+					{
+						order.TableNumber,
+						order.Food
+					}).ToList());
+				}
+				else
+				{
+					return BadRequest("There are no order left undelivered.");
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.Error.WriteLine($"Error fetching table orders: {ex.Message}");
+				return StatusCode(500, "An error occurred while fetching the table orders.");
+			}
+		}
+
 		[HttpDelete("RemoveOrder/{id}")]
 		public async Task<ActionResult> Delete(string id)
 		{
